@@ -13,12 +13,20 @@ fn main() {
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
         let tok = token(input.trim());
-        match tok[..] { 
+        match tok[..] {
             ["exit", code] => {
                 process::exit(code.parse::<i32>().unwrap());
             },
             ["echo", ..] => println!("{}", tok[1..].join(" ")),
-            _ => println!("{}: not found", input.trim())  
+            ["type", command] => {
+                match command {
+                    "echo" => {println!("echo is a shell builtin")},
+                    "exit" => {println!("exit is a shell builtin")},
+                    "type" => {println!("type is a shell builtin")},
+                    _ => println!("{}: not found", command)
+                }
+            },
+            _ => println!("{}: not found", input.trim())
         }
     }
 }
