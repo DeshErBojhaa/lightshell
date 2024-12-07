@@ -17,12 +17,13 @@ fn handle_type(cmd : &str) {
             unwrap().
             any(|entry| entry.as_ref().unwrap().file_name().to_str().unwrap() == cmd) 
             { 
-                println!("{} is {}/{}", cmd, dir, cmd); 
+                println!("{cmd} is {dir}/{cmd}"); 
                 return
             }
     }
     println!("{}: not found", cmd);
 }
+
 
 fn main() {
     loop {
@@ -41,6 +42,11 @@ fn main() {
                 "exit" => {println!("exit is a shell builtin")},
                 "type" => {println!("type is a shell builtin")},
                 _ => handle_type(command)
+            },
+            [program, arg] => {
+                let mut child = process::Command::new(program);
+                child.arg(arg);
+                child.spawn().unwrap().wait().unwrap();
             },
             _ => println!("{}: not found", input.trim())
         }
