@@ -18,13 +18,11 @@ fn main() {
                 process::exit(code.parse::<i32>().unwrap());
             },
             ["echo", ..] => println!("{}", tok[1..].join(" ")),
-            ["type", command] => {
-                match command {
-                    "echo" => {println!("echo is a shell builtin")},
-                    "exit" => {println!("exit is a shell builtin")},
-                    "type" => {println!("type is a shell builtin")},
-                    _ => println!("{}: not found", command)
-                }
+            ["type", command] => match command {
+                "echo" => {println!("echo is a shell builtin")},
+                "exit" => {println!("exit is a shell builtin")},
+                "type" => {println!("type is a shell builtin")},
+                _ => println!("{}: not found", command)
             },
             _ => println!("{}: not found", input.trim())
         }
