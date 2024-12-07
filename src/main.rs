@@ -1,9 +1,27 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
-use std::process;
+use std::{env, process};
+use std::fs::{read_dir};
+use std::path::PathBuf;
 
 fn token(input: &str) -> Vec<&str> {
     input.split_whitespace().collect()
+}
+
+fn handle_type(cmd : &str) {
+    let path_var = env::var("PATH").unwrap();
+    let path = path_var.split(':').collect::<Vec<_>>();
+    for dir in path {
+        if !PathBuf::from(dir).is_dir() { continue };
+        if read_dir(dir).
+            unwrap().
+            any(|entry| entry.as_ref().unwrap().file_name().to_str().unwrap() == cmd) 
+            { 
+                println!("{} is {}/{}", cmd, dir, cmd); 
+                return
+            }
+    }
+    println!("{}: not found", cmd);
 }
 
 fn main() {
@@ -22,7 +40,7 @@ fn main() {
                 "echo" => {println!("echo is a shell builtin")},
                 "exit" => {println!("exit is a shell builtin")},
                 "type" => {println!("type is a shell builtin")},
-                _ => println!("{}: not found", command)
+                _ => handle_type(command)
             },
             _ => println!("{}: not found", input.trim())
         }
