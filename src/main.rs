@@ -11,6 +11,16 @@ fn token(input: &str) -> Vec<&str> {
         let ss = caps.get(1).map_or("", |m| m.as_str());
         return vec!["echo", ss];
     }
+    
+    let re = Regex::new(r"cat\s+((?:'[^']*'\s*)+)").unwrap();
+    if let Some(caps) = re.captures(input) {
+        let mut ss = vec!["cat"];
+        let inner_re = Regex::new(r"'([^']*)'").unwrap();
+        inner_re.captures_iter(caps.get(1).unwrap().as_str()).for_each(|cap| {
+            ss.push(cap.get(1).unwrap().as_str());
+        });
+        return ss;
+    }
     input.split_whitespace().collect()
 }
 
@@ -52,9 +62,11 @@ fn main() {
                 "type" => {println!("type is a shell builtin")},
                 _ => handle_type(command)
             },
-            [program, arg] => {
+            [program, arg1, ..] => {
                 let mut child = process::Command::new(program);
-                child.arg(arg);
+                let mut args: Vec<&str> = vec![arg1];
+                args.append(&mut tok[2..].to_vec());
+                child.args(&args);
                 child.spawn().unwrap().wait().unwrap();
             },
             _ => println!("{}: not found", input.trim())
