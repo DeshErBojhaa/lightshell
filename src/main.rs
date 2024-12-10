@@ -1,10 +1,16 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
-use std::{env, process};
-use std::fs::{read_dir};
+use std::{env, process, vec};
+use std::fs::read_dir;
 use std::path::PathBuf;
+use regex::Regex;
 
 fn token(input: &str) -> Vec<&str> {
+    let re = Regex::new(r"echo\s+'([^']*)'").unwrap();
+    if let Some(caps) = re.captures(input) {
+        let ss = caps.get(1).map_or("", |m| m.as_str());
+        return vec!["echo", ss];
+    }
     input.split_whitespace().collect()
 }
 
@@ -15,9 +21,9 @@ fn handle_type(cmd : &str) {
         if !PathBuf::from(dir).is_dir() { continue };
         if read_dir(dir).
             unwrap().
-            any(|entry| entry.as_ref().unwrap().file_name().to_str().unwrap() == cmd) 
-            { 
-                println!("{cmd} is {dir}/{cmd}"); 
+            any(|entry| entry.as_ref().unwrap().file_name().to_str().unwrap() == cmd)
+            {
+                println!("{cmd} is {dir}/{cmd}");
                 return
             }
     }
@@ -31,12 +37,15 @@ fn main() {
         io::stdout().flush().unwrap();
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
-        let tok = token(input.trim());
+        let tok = token(input.trim_ascii());
         match tok[..] {
             ["exit", code] => {
                 process::exit(code.parse::<i32>().unwrap());
             },
-            ["echo", ..] => println!("{}", tok[1..].join(" ")),
+            ["echo", ..] => {
+                let arg = tok[1..].join(" ");
+                println!("{}", arg);
+            },
             ["type", command] => match command {
                 "echo" => {println!("echo is a shell builtin")},
                 "exit" => {println!("exit is a shell builtin")},
